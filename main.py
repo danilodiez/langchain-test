@@ -154,7 +154,48 @@ def google_search():
     print(response['output'])
 
 
+def testing_tools():
+    llm = OpenAI(model="text-davinci-003", temperature=0.9, openai_api_key=OPENAI_API_KEY)
+
+    prompt = PromptTemplate(
+        input_variables=["query"],
+        template="Write a summary of the following text: {query}"
+    )
+
+    summarize_chain = LLMChain(llm=llm, prompt=prompt)
+    search = GoogleSearchAPIWrapper(google_api_key=GOOGLE_API_KEY, google_cse_id=GOOGLE_CSE_ID)
+
+    tools = [
+        Tool(
+            name="Search",
+            func=search.run,
+            description="useful for finding information about recent events"
+        ),
+        Tool(
+            name="Summarizer",
+            func=summarize_chain.run,
+            description="useful for summarizing texts",
+        )
+    ]
+
+
+    # Now we want to use both tools
+    agent = initialize_agent(
+        tools,
+        llm,
+        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
+        verbose=True
+    )
+
+    response = agent("What's the latest news about Lio Messi? Then please summarize the results.")
+    print(response['output'])
+
+
+
+
+
 # main()
 # createName()
 # mantainMemory()
-google_search()
+# google_search()
+testing_tools()
